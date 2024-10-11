@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobile_development_lab_06_verbose_commits.databinding.FragmentCrimeListBinding
 import com.example.mobile_development_lab_06_verbose_commits.databinding.ListItemCrimeBinding
+import com.example.mobile_development_lab_06_verbose_commits.databinding.ListItemSeriousCrimeBinding
 
 private const val TAG = "CrimeListFragment"
 
@@ -78,26 +79,53 @@ class CrimeListFragment : Fragment() {
 
 
         private val VIEW_TYPE_NORMAL = 0
+        private val VIEW_TYPE_SERIOUS = 1
 
 
         override fun getItemViewType(position: Int): Int {
-            return VIEW_TYPE_NORMAL
+            return if (crimes[position].requiresPolice) {
+                VIEW_TYPE_SERIOUS // Возвращаем тип для серьезных преступлений
+            } else {
+                VIEW_TYPE_NORMAL // Возвращаем тип для обычных преступлений
+            }
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            val binding = ListItemCrimeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-            return CrimeHolder(binding)
+            return when (viewType) {
+                VIEW_TYPE_SERIOUS -> {
+                    val binding = ListItemSeriousCrimeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                    SeriousCrimeHolder(binding)
+                }
+                else -> {
+                    val binding = ListItemCrimeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                    CrimeHolder(binding)
+                }
+            }
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             val crime = crimes[position]
             when (holder) {
                 is CrimeHolder -> holder.bind(crime)
+                is SeriousCrimeHolder -> holder.bind(crime)
             }
         }
 
         override fun getItemCount(): Int {
             return crimes.size
+        }
+    }
+
+    private inner class SeriousCrimeHolder(private val binding: ListItemSeriousCrimeBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(crime: Crime) {
+            binding.crimeTitle.text = crime.title
+            binding.crimeDate.text = crime.date.toString()
+
+            // Установите обработчик нажатия для кнопки "Связаться с полицией"
+            binding.contactPoliceButton.setOnClickListener {
+                Toast.makeText(context, "Contacting police for ${crime.title}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
