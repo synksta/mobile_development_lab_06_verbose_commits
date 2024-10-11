@@ -7,6 +7,10 @@ android {
     namespace = "com.example.mobile_development_lab_06_verbose_commits"
     compileSdk = 34
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     defaultConfig {
         applicationId = "com.example.mobile_development_lab_06_verbose_commits"
         minSdk = 24
