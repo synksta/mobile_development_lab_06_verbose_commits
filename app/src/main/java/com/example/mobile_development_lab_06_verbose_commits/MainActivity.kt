@@ -17,7 +17,9 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
         setContentView(binding.root)
 
         supportFragmentManager.findFragmentById(binding.fragmentContainer.id)?.let {
+            // Фрагмент уже существует, ничего не делаем
         } ?: run {
+            // Если фрагмент не найден, создаем новый
             val fragment = CrimeListFragment.newInstance()
             supportFragmentManager
                 .beginTransaction()

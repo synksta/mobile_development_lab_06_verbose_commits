@@ -5,5 +5,5 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.Mobile_development_lab_06_verbose_commits" parent="Base.Theme.Mobile_development_lab_06_verbose_commits" />
+    <style name="Theme.Mobile_development_lab_06" parent="Base.Theme.Mobile_development_lab_06" />
 </resources>
