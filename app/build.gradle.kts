@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp") version "2.0.20-1.0.24"
 }
 
 android {
@@ -40,6 +41,23 @@ android {
 }
 
 dependencies {
+
+
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
+    implementation(libs.androidx.lifecycle.viewmodel.ktx) // Замените на актуальную версию
+    implementation(libs.androidx.fragment.ktx) // Замените на актуальную версию
+
+//    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+//    implementation(libs.androidx.lifecycle.livedata.ktx)
+//
+//    implementation(libs.androidx.room.runtime)
+//    ksp(libs.room.compiler)
+//
+//    implementation(libs.androidx.activity.ktx)
+//    implementation(libs.androidx.fragment.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

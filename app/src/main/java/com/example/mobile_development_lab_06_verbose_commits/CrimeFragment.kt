@@ -1,23 +1,52 @@
-package com.example.mobile_development_lab_06_verbose_commits
+package com.example.mobile_development_lab_06
 
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.example.mobile_development_lab_06_verbose_commits.ARG_DATE
+import com.example.mobile_development_lab_06_verbose_commits.Crime
+import com.example.mobile_development_lab_06_verbose_commits.CrimeDetailViewModel
+import com.example.mobile_development_lab_06_verbose_commits.DIALOG_DATE
 import com.example.mobile_development_lab_06_verbose_commits.databinding.FragmentCrimeBinding
+import java.util.Date
+import java.util.UUID
 
-class CrimeFragment : Fragment() {
+private const val TAG = "CrimeFragment"
+private const val ARG_CRIME_ID = "crime_id"
+
+class CrimeFragment : Fragment(){
 
     private lateinit var crime: Crime
-    private var _binding: FragmentCrimeBinding? = null // Объявляем переменную для binding
-    private val binding get() = _binding!! // Создаем геттер для безопасного доступа
+    private var _binding: FragmentCrimeBinding? = null
+    private val binding get() = _binding!!
+    private val crimeDetailViewModel: CrimeDetailViewModel by viewModels()
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         crime = Crime()
+        val crimeId : UUID = arguments?.getSerializable(ARG_CRIME_ID, UUID::class.java)!!
+        Log.d(TAG, "args bundle crime ID: $crimeId")
+    }
+
+    companion object {
+        fun newInstance(crimeId: UUID): CrimeFragment {
+            val args = Bundle().apply {
+                Log.d(TAG, "Crime id: $crimeId")
+                putSerializable(ARG_CRIME_ID, crimeId)
+            }
+            return CrimeFragment().apply {
+                arguments = args
+            }
+        }
     }
 
     override fun onCreateView(
@@ -25,41 +54,78 @@ class CrimeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentCrimeBinding.inflate(inflater, container, false) // Инициализация binding
-        return binding.root // Возвращаем корневой элемент из binding
+        _binding = FragmentCrimeBinding.inflate(inflater, container, false)
+
+        return binding.root
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Используем binding для доступа к элементам UI
-        binding.crimeTitle.setText(crime.title) // Устанавливаем текст заголовка
-        binding.crimeDate.apply {
-            text = crime.date.toString()
-            isEnabled = false
+        // Получаем crimeId из аргументов
+        val crimeId: UUID? = arguments?.getSerializable(ARG_CRIME_ID, UUID::class.java)
+
+        // Проверяем, что crimeId не null и загружаем данные
+        crimeId?.let {
+            crimeDetailViewModel.loadCrime(it) // Загружаем преступление по ID
         }
 
-        binding.crimeSolved.isChecked = crime.isSolved // Устанавливаем состояние чекбокса
+        parentFragmentManager.setFragmentResultListener(DIALOG_DATE, viewLifecycleOwner) { _, bundle ->
+            val date = bundle.getSerializable(ARG_DATE, Date::class.java)
+            date?.let {
+                crime.date = it
+                updateUI()
+            }
+        }
 
-        // Добавляем слушатель на изменения текста заголовка
+        // Наблюдаем за изменениями в crimeLiveData
+        crimeDetailViewModel.crimeLiveData.observe(viewLifecycleOwner) { crime ->
+            crime?.let {
+                this.crime = it
+                updateUI()
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
         binding.crimeTitle.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(sequence: CharSequence?, start: Int, count: Int, after: Int) { }
-
+            override fun beforeTextChanged(sequence: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {
                 crime.title = sequence.toString()
             }
-
-            override fun afterTextChanged(sequence: Editable?) { }
+            override fun afterTextChanged(sequence: Editable?) {}
         })
 
-        // Добавляем слушатель на изменения состояния чекбокса
         binding.crimeSolved.setOnCheckedChangeListener { _, isChecked ->
             crime.isSolved = isChecked
         }
+
+        binding.crimeDate.setOnClickListener {
+//            DatePickerFragment.newInstance(crime.date).show(parentFragmentManager, DIALOG_DATE)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        crimeDetailViewModel.saveCrime(crime)
+    }
+
+//    override fun onDateSelected(date: Date) {
+//        crime.date = date
+//        updateUI()
+//    }
+
+    private fun updateUI() {
+        binding.crimeTitle.setText(crime.title)
+        binding.crimeDate.text = crime.date.toString()
+        binding.crimeSolved.isChecked = crime.isSolved
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null // Освобождаем память при уничтожении представления
+        _binding = null
     }
 }

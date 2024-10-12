@@ -1,10 +1,15 @@
 package com.example.mobile_development_lab_06_verbose_commits
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.example.mobile_development_lab_06.CrimeFragment
 import com.example.mobile_development_lab_06_verbose_commits.databinding.ActivityMainBinding
+import java.util.UUID
 
-class MainActivity : AppCompatActivity() {
+private const val TAG = "MainActivity"
+
+class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,5 +25,17 @@ class MainActivity : AppCompatActivity() {
                 .add(binding.fragmentContainer.id, fragment)
                 .commit()
         }
+    }
+
+    override fun onCrimeSelected(crimeId: UUID)
+    {
+        Log.d(TAG, "MainActivity.onCrimeSelected: $crimeId")
+        val fragment = CrimeFragment.newInstance(crimeId)
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container,
+                fragment)
+            .addToBackStack(null)
+            .commit()
     }
 }
