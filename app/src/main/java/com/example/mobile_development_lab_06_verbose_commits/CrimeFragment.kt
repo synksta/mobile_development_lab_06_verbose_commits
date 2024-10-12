@@ -1,4 +1,4 @@
-package com.example.mobile_development_lab_06
+package com.example.mobile_development_lab_06_verbose_commits
 
 import android.os.Build
 import android.os.Bundle
@@ -11,11 +11,6 @@ import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.example.mobile_development_lab_06_verbose_commits.ARG_DATE
-import com.example.mobile_development_lab_06_verbose_commits.Crime
-import com.example.mobile_development_lab_06_verbose_commits.CrimeDetailViewModel
-import com.example.mobile_development_lab_06_verbose_commits.DIALOG_DATE
-import com.example.mobile_development_lab_06_verbose_commits.DatePickerFragment
 import com.example.mobile_development_lab_06_verbose_commits.databinding.FragmentCrimeBinding
 import java.util.Date
 import java.util.UUID
@@ -23,7 +18,7 @@ import java.util.UUID
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id"
 
-class CrimeFragment : Fragment(){
+class CrimeFragment : Fragment(), DatePickerFragment.Callbacks{
 
     private lateinit var crime: Crime
     private var _binding: FragmentCrimeBinding? = null
@@ -114,10 +109,10 @@ class CrimeFragment : Fragment(){
         crimeDetailViewModel.saveCrime(crime)
     }
 
-//    override fun onDateSelected(date: Date) {
-//        crime.date = date
-//        updateUI()
-//    }
+    override fun onDateSelected(date: Date) {
+        crime.date = date
+        updateUI()
+    }
 
     private fun updateUI() {
         binding.crimeTitle.setText(crime.title)

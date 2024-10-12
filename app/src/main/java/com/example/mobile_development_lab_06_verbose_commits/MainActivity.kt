@@ -3,7 +3,6 @@ package com.example.mobile_development_lab_06_verbose_commits
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.example.mobile_development_lab_06.CrimeFragment
 import com.example.mobile_development_lab_06_verbose_commits.databinding.ActivityMainBinding
 import java.util.UUID
 
