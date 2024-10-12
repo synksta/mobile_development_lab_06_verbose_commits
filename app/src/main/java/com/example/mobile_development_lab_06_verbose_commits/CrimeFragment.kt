@@ -15,6 +15,7 @@ import com.example.mobile_development_lab_06_verbose_commits.ARG_DATE
 import com.example.mobile_development_lab_06_verbose_commits.Crime
 import com.example.mobile_development_lab_06_verbose_commits.CrimeDetailViewModel
 import com.example.mobile_development_lab_06_verbose_commits.DIALOG_DATE
+import com.example.mobile_development_lab_06_verbose_commits.DatePickerFragment
 import com.example.mobile_development_lab_06_verbose_commits.databinding.FragmentCrimeBinding
 import java.util.Date
 import java.util.UUID
@@ -104,7 +105,7 @@ class CrimeFragment : Fragment(){
         }
 
         binding.crimeDate.setOnClickListener {
-//            DatePickerFragment.newInstance(crime.date).show(parentFragmentManager, DIALOG_DATE)
+            DatePickerFragment.newInstance(crime.date).show(parentFragmentManager, DIALOG_DATE)
         }
     }
 
