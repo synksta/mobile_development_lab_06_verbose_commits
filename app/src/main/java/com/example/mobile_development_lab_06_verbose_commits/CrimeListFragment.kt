@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobile_development_lab_06_verbose_commits.databinding.FragmentCrimeListBinding
 import com.example.mobile_development_lab_06_verbose_commits.databinding.ListItemCrimeBinding
-import com.example.mobile_development_lab_06_verbose_commits.databinding.ListItemSeriousCrimeBinding
 import com.google.android.material.snackbar.Snackbar
 import java.util.Date
 import java.util.UUID
@@ -125,19 +124,6 @@ class CrimeListFragment : Fragment() {
         override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
             val crime = crimes[position]
             holder.bind(crime)
-        }
-    }
-
-    private inner class SeriousCrimeHolder(private val binding: ListItemSeriousCrimeBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(crime: Crime) {
-            binding.crimeTitle.text = crime.title
-            binding.crimeDate.text = crime.date.toString()
-
-            // Установите обработчик нажатия для кнопки "Связаться с полицией"
-            binding.contactPoliceButton.setOnClickListener {
-                Snackbar.make(itemView, "Contacting police for ${crime.title}", Snackbar.LENGTH_SHORT).show()
-                callbacks?.onCrimeSelected(crime.id) // Уведомляем о выборе преступления
-            }
         }
     }
 
