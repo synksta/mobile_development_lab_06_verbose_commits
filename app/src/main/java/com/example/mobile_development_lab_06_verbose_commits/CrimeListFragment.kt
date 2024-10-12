@@ -1,6 +1,6 @@
 package com.example.mobile_development_lab_06_verbose_commits
 
-
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateFormat
@@ -8,14 +8,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobile_development_lab_06_verbose_commits.databinding.FragmentCrimeListBinding
-import com.example.mobile_development_lab_06_verbose_commits.databinding.ListItemCrimeBinding // Добавьте этот импорт
+import com.example.mobile_development_lab_06_verbose_commits.databinding.ListItemCrimeBinding
 import com.example.mobile_development_lab_06_verbose_commits.databinding.ListItemSeriousCrimeBinding
+import com.google.android.material.snackbar.Snackbar
 import java.util.Date
 import java.util.UUID
 
@@ -26,11 +27,12 @@ class CrimeListFragment : Fragment() {
     interface Callbacks {
         fun onCrimeSelected(crimeId: UUID)
     }
+
     private var callbacks: Callbacks? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        callbacks = context as Callbacks?
+        callbacks = context as? Callbacks // Используем безопасный приведение типов
     }
 
     override fun onDetach() {
@@ -41,14 +43,10 @@ class CrimeListFragment : Fragment() {
     private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
 
     private var _binding: FragmentCrimeListBinding? = null // Объявляем переменную для binding
-    private val binding get() = _binding!! // Создаем геттер для безопасного доступа
+    private val binding get() = _binding ?: throw IllegalStateException("Binding should not be null") // Безопасный доступ
 
     private val crimeListViewModel: CrimeListViewModel by lazy {
         ViewModelProvider(this)[CrimeListViewModel::class.java] // Используем ViewModelProvider
-    }
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d(TAG, "Total crimes: ${crimeListViewModel.crimes.size}")
     }
 
     override fun onCreateView(
@@ -56,24 +54,31 @@ class CrimeListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Инициализация binding
         _binding = FragmentCrimeListBinding.inflate(inflater, container, false)
 
-        // Установка LayoutManager для RecyclerView
         binding.crimeRecyclerView.layoutManager = LinearLayoutManager(context)
-
-        // Установка адаптера для RecyclerView
-        binding.crimeRecyclerView.adapter = CrimeAdapter(crimeListViewModel.crimes)
-
-        updateUI()
+        binding.crimeRecyclerView.adapter = adapter
 
         return binding.root // Возвращаем корневой элемент из binding
     }
 
-    private fun updateUI() {
-        val crimes = crimeListViewModel.crimes
-        adapter = CrimeAdapter(crimes)
-        binding.crimeRecyclerView.adapter = adapter
+    @SuppressLint("NotifyDataSetChanged")
+    private fun updateUI(crimes: List<Crime>) {
+        adapter?.crimes = crimes // Обновляем данные в существующем адаптере
+        adapter?.notifyDataSetChanged() // Уведомляем адаптер об изменениях
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        crimeListViewModel.crimeListLiveData.observe(
+            viewLifecycleOwner,
+            Observer { crimes ->
+                crimes?.let {
+                    Log.i(TAG, "Got crimes: ${crimes.size}") // Логируем количество преступлений
+                    updateUI(crimes)
+                }
+            }
+        )
     }
 
     private inner class CrimeHolder(private val binding: ListItemCrimeBinding) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
@@ -92,8 +97,7 @@ class CrimeListFragment : Fragment() {
             binding.crimeDate.text = formattedDate
 
             binding.crimeSolved.visibility =
-                if (crime.isSolved) View.VISIBLE
-                else View.GONE
+                if (crime.isSolved) View.VISIBLE else View.GONE
         }
 
         private fun formatDate(date: Date): String {
@@ -104,20 +108,20 @@ class CrimeListFragment : Fragment() {
         }
 
         override fun onClick(v: View) {
-            Toast.makeText(context, "${this.crime.title} pressed!", Toast.LENGTH_SHORT).show()
-            Log.d("CrimeListFragment", "${crime.title} clicked!")
+            Snackbar.make(v, "${this.crime.title} pressed!", Snackbar.LENGTH_SHORT).show() // Используем Snackbar вместо Toast
+            Log.d(TAG, "${crime.title} clicked!")
             callbacks?.onCrimeSelected(crime.id)
         }
     }
-
 
     private inner class CrimeAdapter(var crimes: List<Crime>) : RecyclerView.Adapter<CrimeHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
             val binding = ListItemCrimeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             return CrimeHolder(binding)
         }
-        override fun getItemCount() =
-            crimes.size
+
+        override fun getItemCount() = crimes.size
+
         override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
             val crime = crimes[position]
             holder.bind(crime)
@@ -131,11 +135,11 @@ class CrimeListFragment : Fragment() {
 
             // Установите обработчик нажатия для кнопки "Связаться с полицией"
             binding.contactPoliceButton.setOnClickListener {
-                Toast.makeText(context, "Contacting police for ${crime.title}", Toast.LENGTH_SHORT).show()
+                Snackbar.make(itemView, "Contacting police for ${crime.title}", Snackbar.LENGTH_SHORT).show()
+                callbacks?.onCrimeSelected(crime.id) // Уведомляем о выборе преступления
             }
         }
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
